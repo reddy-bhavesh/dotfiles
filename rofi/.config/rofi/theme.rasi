@@ -1,0 +1,14 @@
+/*
+  bg - background
+  fg - foreground
+  br - border
+*/
+
+* {
+  main-fg:        #ffffff;   /* White for main foreground text */
+  main-bg:        #1a1a1a;   /* Darker background closer to black */
+  main-br:        #cc0000;   /* Bright red for borders */
+  input-bg:       #181825;   /* Slightly lighter black for input background */
+  select-bg:      #ff0000;   /* Bright red for selection background */
+  select-fg:      #ffffff;   /* White for text on selection */
+}
