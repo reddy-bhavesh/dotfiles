@@ -1,185 +1,77 @@
-# lines_to_append="ILoveCandy\nParallelDownloads=10\nColor"
-# sudo sed -i '/^\[options\]/a '"$lines_to_append" /etc/pacman.conf
+#!/bin/bash
 
-# mkdir Downloads Documents Music Videos Pictures Desktop Git
-# Update the system
-# sudo pacman -Syu archlinux-keyring --noconfirm
+# Log File Setup
+LOG_FILE="install_log.txt"
+exec > >(tee -a "$LOG_FILE") 2>&1
 
-# 1. Install essential packages
-# sudo pacman -S base-devel intel-ucode git vim zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting bash-completion openssh wget curl btop bat exa fd ripgrep fzf stow stylua tar tree time acpilight aria2 unrar unzip bluez bluez-utils brightnessctl xfsprogs ntfs-3g clang gcc clipmenu clipnotify inotify-tools psutils dunst e2fsprogs gvfs gvfs-afc gvfs-google gvfs-goa gvfs-gphoto2 gvfs-mtp gvfs-nfs gvfs-onedrive gvfs-smb efibootmgr zoxide gc git-lfs gnome-keyring polkit-gnome pass udiskie gstreamer jq xdotool screenkey xorg-xprop lazygit lolcat sxiv shellcheck net-tools numlockx prettier progress zip rsync trash-cli tlp tlp-rdw neovim xorg-xinput xclip xcompmgr xorg-xrandr xorg-xsetroot xsel xwallpaper pandoc starship python-pywal glow xarchiver xfce4-clipman-plugin qemu-full libguestfs xorg-xman man-db man-pages ncdu python-adblock dnsmasq python-pip nwg-look python-prctl vscode-css-languageserver ffmpegthumbnailer virt-manager spice-vdagent lua-language-server pass pinentry gnupg pass-otp zbar xorg-xlsclients xscreensaver os-prober qt5ct pamixer qt5-wayland qt6-wayland parallel shfmt tesseract html-xml-utils --noconfirm
+# Update System
+echo "Updating system packages..."
+sudo pacman -Syu --noconfirm
 
-# Using XFCE4-CLIPMAN for clipboard manager
+# Install System Packages
+echo "Installing system packages..."
+sudo pacman -S --needed --noconfirm aircrack-ng alsa-utils ani-cli ark baobab base base-devel bash-completion blueman bluetui bluez-utils brightnessctl btop chafa clipse-bin crunch discord dolphin dunst efibootmgr egl-wayland eog evince fd firefox fish flatpak git github-desktop-bin gnome-keyring grim grub gruvbox-dark-gtk gst-plugin-pipewire gtk-engine-murrine gvfs gvfs-afc gvfs-google hashcat hcxtools htop hypridle hyprland hyprland-qtutils hyprlock hyprpaper hyprpicker intel-media-driver intel-ucode iwd jdk-openjdk jq kate kitty konsole kvantum kvantum-theme-otto-git libpulse libreoffice-fresh libva-intel-driver linux linux-firmware linux-headers linux-lts linux-lts-headers lxappearance nano neofetch neovim network-manager-applet networkmanager nodejs npm ntfs-3g opencv os-prober pacman-contrib paru paru-debug pipewire pipewire-alsa pipewire-jack pipewire-pulse plasma-meta plasma-workspace plymouth plymouth-kcm polkit-kde-agent python-matplotlib python-pandas python-pip python-pipx python-scikit-learn python-tensorflow qt5-wayland qt6-wayland qt6ct ranger reflector ripgrep rofi-lbonn-wayland-git slurp smartmontools sof-firmware spotify stow streamlink texlive-basic texlive-fontsextra texlive-latexextra texlive-meta thunar thunar-archive-plugin thunar-media-tags-plugin thunar-shares-plugin thunar-vcs-plugin thunar-volman ttf-dejavu ttf-jetbrains-mono-nerd udiskie unzip vim virtualbox visual-studio-code-bin vulkan-intel vulkan-radeon waybar wf-recorder wget whitesur-cursor-theme-git whitesur-icon-theme wireless_tools wireplumber wl-clipboard wlogout wofi xdg-desktop-portal-hyprland xdg-utils xf86-video-amdgpu xf86-video-ati xf86-video-nouveau xf86-video-vmware xorg-xinit yay yay-debug zathura zathura-pdf-poppler zen-browser-bin zram-generator zsh
 
-# 2. Install yay
-# git clone https://aur.archlinux.org/paru.git
-# cd paru
-# makepkg -si
-# cd ..
-# rm -rf paru
+# Install AUR Packages
+echo "Installing AUR packages..."
+if ! command -v paru &>/dev/null; then
+    echo "Paru not found. Installing paru..."
+    git clone https://aur.archlinux.org/paru.git
+    cd paru
+    makepkg -si --noconfirm
+    cd ..
+    rm -rf paru
+fi
+paru -S --needed --noconfirm ani-cli bluetui-debug clipse-bin crunch crunch-debug github-desktop-bin gruvbox-dark-gtk hyprland-qtutils kvantum-theme-otto-git paru paru-debug rofi-lbonn-wayland-git rofi-lbonn-wayland-git-debug spotify visual-studio-code-bin visual-studio-code-bin-debug waybar-git-debug whitesur-cursor-theme-git whitesur-icon-theme wlogout wlogout-debug yay yay-debug zen-browser-bin
 
-# 3. Install AUR packages
-# paru -S zen-browser-bin ccrypt didyoumean-git github-desktop-bin visual-studio-code-bin preload git-remote-gcrypt --noconfirm
+# Clone Dotfiles Repository
+echo "Cloning dotfiles repository..."
+DOTFILES_DIR="$HOME/dotfiles"
+if [ ! -d "$DOTFILES_DIR" ]; then
+    git clone git@github.com:reddy-bhavesh/dotfiles.git "$DOTFILES_DIR"
+else
+    echo "Dotfiles repository already exists. Pulling latest changes..."
+    git -C "$DOTFILES_DIR" pull
+fi
 
-# 4. Install GUI packages
-# sudo pacman -S baobab gnome-disk-utility flameshot bc docker docker-compose docker-scan gparted libreoffice-fresh pavucontrol ranger yad timeshift --noconfirm
+# Symlink Dotfiles
+echo "Symlinking dotfiles..."
+ln -sf "$DOTFILES_DIR/Hyprland/.config/hypr" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/Hyprland/.config/kitty" "$HOME/.config/kitty"
+ln -sf "$DOTFILES_DIR/Hyprland/.config/waybar" "$HOME/.config/waybar"
+ln -sf "$DOTFILES_DIR/Hyprland/.config/wlogout" "$HOME/.config/wlogout"
+ln -sf "$DOTFILES_DIR/Btop/.config/btop" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/Clipse/.config/clipse" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/dunst/.config/dunst" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/Gtk/.config/gtk-2.0" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/Gtk/.config/gtk-3.0" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/Gtk/.config/gtk-4.0" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/kvantum/.config/Kvantum" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/neofetch/.config/neofetch" "$HOME/.config/hypr"
+ln -sf "$DOTFILES_DIR/" "$HOME/.config/hypr"
+# Add more symlinks here as needed.
 
-# 5. Install multimedia packages
-# sudo pacman -S mpv mpc mpd ncmpcpp mplayer poppler poppler-glib --noconfirm &&
-# yay -S ferdium-bin --noconfirm
-# sudo pacman -Rns kate
+# Install Fonts
+echo "Installing fonts..."
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p "$FONT_DIR"
+cp -r "$DOTFILES_DIR/fonts/*" "$FONT_DIR"
+fc-cache -fv
 
-# 6. Install fonts
-# sudo pacman -S adobe-source-code-pro-fonts noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-hack ttf-jetbrains-mono ttf-ubuntu-font-family ttf-ubuntu-mono-nerd ttf-ubuntu-nerd ttf-opensans gnu-free-fonts --noconfirm && paru -S ttf-ms-fonts qt6ct-kde --noconfirm
+# Apply Themes
+echo "Applying themes..."
+ln -sf "$DOTFILES_DIR/.config/gtk-3.0" "$HOME/.config/gtk-3.0"
+ln -sf "$DOTFILES_DIR/.config/gtk-4.0" "$HOME/.config/gtk-4.0"
+ln -sf "$DOTFILES_DIR/.config/kvantum" "$HOME/.config/kvantum"
 
-# 7. Install external packages
-# paru -S ani-cli-git arch-wiki-docs ytfzf-git  --noconfirm
-# yay -S walogram-git docker-desktop # Optional
-# sudo pacman -S yt-dlp go hugo hunspell hunspell-en_us imagemagick ueberzug luacheck mlocate newsboat nodejs npm texlive-bin texlive-meta texlive-latex texlive-basic translate-shell --noconfirm
+# Enable Services
+echo "Enabling services..."
+sudo systemctl enable bluetooth
+sudo systemctl enable NetworkManager
 
-# 8. Mariadb setup
-# sudo pacman -S mariadb --noconfirm
-# sudo mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
-# sudo systemctl enable --now mariadb
-# sudo mariadb-secure-installation
-
-# 9. Enable services
-# sudo updatedb
-# sudo mandb
-# sudo systemctl enable --now tlp
-# sudo systemctl enable --now bluetooth.service
-# sudo systemctl enable lightdm.service
-# sudo systemctl enable --now libvirtd
-
-# 10. Permissions
-# sudo usermod -aG docker $USER
-# sudo usermod -aG video $USER
-# sudo usermod -aG libvirt $USER
-# sudo virsh net-start default
-# For VM sharing https://docs.getutm.app/guest-support/linux/
-
-# 11. Setup git
-#git config --global user.name "Chaganti-Reddy"
-#git config --global user.email "chagantivenkataramireddy4@gmail.com"
-
-# 12. Alternatives & Optionals:
-# 1. Install Java
-#sudo pacman -S jdk-openjdk openjdk-doc openjdk-src --noconfirm
-# 2. Install qbit torrent
-# sudo pacman -S qbittorrent --noconfirm
-# 4. Install Teamviewer
-# paru -S teamviewer --noconfirm
-# 5. Install Zathura
-# sudo pacman -S zathura zathura-pdf-mupdf zathura-djvu zathura-ps zathura-cb --noconfirm && yay -S zathura-pywal-git --noconfirm
-# also install pywal zathura in ~/dotfiles/Extras/Extras/Zathura-Pywal-master/
-# 8. Install Thunar
-# sudo pacman -S thunar thunar-archive-plugin thunar-volman thunar-media-tags-plugin --noconfirm
-# 8. Install GTK theme and QT theme
-# yay -S elementary-icon-theme --noconfirm # Previously used icons
-# paru -S  gruvbox-dark-gtk whitesur-icon-theme whitesur-gtk-theme-git kvantum-theme-whitesur-git whitesur-cursor-theme-git kvantum kvantum-theme-otto-git && sudo pacman -S gtk-engine-murrine --noconfirm
-# 15. Install MINICONDA
-# wget https://repo.anaconda.com/miniconda/Miniconda3-py310_24.3.0-0-Linux-x86_64.sh
-# sh Miniconda3-py310_24.3.0-0-Linux-x86_64.sh
-# rm Miniconda3-py310_24.3.0-0-Linux-x86_64.sh
-# 9. Install anipy-cli
-# pip install anipy-cli
-# 10. Install Doom Emacs
-# sudo pacman -S emacs --noconfirm && git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs && ~/.config/emacs/bin/doom install # Later run doom sync
-# After that run ---- M-x nerd-icons-install-fonts
-# 11. Insatll waldl from Extras folder of dotfiles
-# cd  ~/dotfiles/Extras/Extras/waldl-master/ && sudo make install && cd ~/dotfiles
-# 12. Install ollama from Extras folder of dotfiles
-# sh ~/dotfiles/Extras/Extras/ollama.sh
-# ollama serve
-# ollama pull mistral
-# ollama pull gemma:7b
-# 13. Install brave Extensions
-# brave://extensions/ ---> Install Comp Companion, uBlock Origin, GFG to Github, Google Translate, LeetHub, User-Agent switcher
-# 14. Install Bash Language Server
-# sudo npm i -g bash-language-server
-# 15. Setup zsh shell as default
-# chsh -s /bin/zsh
-# 16. Install oh-my-zsh
-# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-# exit # exit from zsh
-# 17. Install floorp instead of firefox
-# paru -S zen-browser-bin --noconfirm
-# paru -S python-pywalfox --noconfirm
-# 18. Use dmenu for network manager (Optional)
-# yay -S networkmanager-dmenu-git
-# 19. Install Blender for Video Editing
-# sudo pacman -S blender --noconfirm
-# 20. Install OBS Studio for Screen Recording
-# sudo pacman -S obs-studio --noconfirm
-# 21. Install GIMP for Image Editing
-# sudo pacman -S gimp --noconfirm
-# 22. Install Inkscape for Vector Graphics
-# sudo pacman -S inkscape --noconfirm
-# 23. Install Octave for Numerical Computing
-# sudo pacman -S octave --noconfirm
-# 24. Install blueman if needed for bluetooth manager
-# sudo pacman -S blueman --noconfirm
-# sudo pacman -S discord --noconfirm
-
-# 13. Move Respective files to root directory
-# sudo mkdir /usr/share/xsessions/
-# sudo cp ~/dotfiles/Extras/Extras/usr/share/xsessions/dwm.desktop /usr/share/xsessions
-# # sudo cp -r ~/dotfiles/Extras/Extras/boot/grub/themes/mocha /boot/grub/themes/
-# sudo cp -r ~/dotfiles/Extras/Extras/boot/grub/themes/tartarus/ /boot/grub/themes/
-# Now edit the grub config file
-# sudo cp ~/dotfiles/Extras/Extras/etc/bash.bashrc /etc/
-# sudo cp ~/dotfiles/Extras/Extras/etc/DIR_COLORS /etc/
-# sudo cp ~/dotfiles/Extras/Extras/etc/mpd.conf /etc/
-# sudo cp ~/dotfiles/Extras/Extras/etc/nanorc /etc/
-# sudo cp ~/dotfiles/Extras/Extras/etc/environment /etc/
-# # sudo cp -r ~/dotfiles/Extras/Extras/etc/lightdm/ /etc/
-# cp ~/dotfiles/Extras/Extras/alanpeabody.zsh-theme ~/.oh-my-zsh/themes/
-# mkdir ~/.icons && cp -r ~/dotfiles/Extras/Extras/.icons/Capitaine/ ~/.icons/
-
-# 16. Install Fonts
-# mv my-fonts ~/.local/share/fonts/
-
-# 17. Install/stow dotfiles
-# First check for conflicts
-#rm -rf ~/.config/doom
-# rm -rf ~/.config/gtk-3.0
-# rm ~/.bashrc
-# rm ~/.zshrc
-# cd ~/dotfiles
-# stow */
-
-# 18. Install DWM
-# cd ~/.config/dwm && sudo make clean install && cd
-# cd ~/.config/slstatus && sudo make clean install && cd
-# cd ~/.config/st && sudo make install && cd
-# cd ~/.config/dmenu && sudo make install && cd
-
-# 19. Install Stockfish
-# wget https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-ubuntu-x86-64-avx2.tar
-# tar -xvf stockfish-ubuntu-x86-64-avx2.tar
-# rm stockfish-ubuntu-x86-64-avx2.tar
-# mv stockfish ~/
-
-# Install python packages
-# pip install pynvim numpy pandas matplotlib seaborn scikit-learn jupyterlab ipykernel ipywidgets tensorflow python-prctl inotify-simple psutil opencv-python keras mov-cli-youtube mov-cli mov-cli-test otaku-watcher film-central daemon
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu # pytorch cpu version
-
-### HYPRLAND
-
-# sudo pacman -S kitty hyprland system-config-printer hyprpicker hyprlock chafa hypridle waybar wl-clipboard speech-dispatcher hyprpaper brightnessctl cmake meson cpio grim slurp rofi rofi-emoji rofi-calc wtype wf-recorder swaync zenity
-# paru -S wlrobs-hg  clipse-bin hyde-cli-git wlogout hyprshot-git
-# sudo pacman -S wofi
-# git clone https://github.com/dracula/wofi.git
-# sudo pacman -S thunar thunar-archive-plugin thunar-media-tags-plugin thunar-volman thunar-vcs-plugin
-#
-#
-#### SDDM
-# sudo pacman -S qt6-5compat qt6-declarative qt6-svg sddm
-
-# Video Download Helper
-# curl -sSLf https://github.com/aclap-dev/vdhcoapp/releases/latest/download/install.sh | bash
-#
-# Open in neovim from Thunar
-# sudo cp ~/dotfiles/Extras/Extras/nvim.desktop /usr/share/applications/
-#
-# Compiler.nvim for neovim compilation --> Choose what you need
-# paru -S --needed "gcc" "binutils" "dotnet-runtime" "dotnet-sdk" "aspnet-runtime" "mono" "jdk-openjdk" "dart" "kotlin" "elixir" "npm" "nodejs" "typescript" "make" "go" "nasm" "r" "nuitka" "python" "ruby" "perl" "lua" "pyinstaller" "swift-language" "flutter-bin" "gcc-fortran" "fortran-fpm-bin"
+# Error Handling Completed
+if [ $? -ne 0 ]; then
+    echo "Some tasks encountered errors. Check $LOG_FILE for details."
+else
+    echo "Installation completed successfully."
+fi
